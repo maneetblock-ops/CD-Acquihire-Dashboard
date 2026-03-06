@@ -1,0 +1,13 @@
+<svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Block mark">
+  <g fill="#f3f6ff">
+    <rect x="8" y="8" width="40" height="40" rx="8"/>
+    <rect x="60" y="8" width="40" height="40" rx="8"/>
+    <rect x="112" y="8" width="40" height="40" rx="8"/>
+    <rect x="8" y="60" width="40" height="40" rx="8"/>
+    <rect x="60" y="60" width="40" height="40" rx="8"/>
+    <rect x="112" y="60" width="40" height="40" rx="8"/>
+    <rect x="8" y="112" width="40" height="40" rx="8"/>
+    <rect x="60" y="112" width="40" height="40" rx="8"/>
+    <rect x="112" y="112" width="40" height="40" rx="8"/>
+  </g>
+</svg>

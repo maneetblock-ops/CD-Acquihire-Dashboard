@@ -1,0 +1,1967 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corp Dev AI Talent Pipeline</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+    :root {
+      --bg: #090b10;
+      --paper: #141925;
+      --ink: #e8ebf2;
+      --muted: #8f99ad;
+      --line: #2f3748;
+      --surface: #182031;
+      --brand: #141922;
+      --brand-2: #3f4758;
+      --accent: #8b95ad;
+      --good: #55b37a;
+      --warn: #d5a057;
+      --danger: #d96f6f;
+      --shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
+      --radius-xl: 12px;
+      --radius-lg: 10px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "SF Pro Text", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% -18%, rgba(255, 255, 255, 0.06), transparent 28%),
+        radial-gradient(circle at 90% -20%, rgba(255, 255, 255, 0.03), transparent 32%),
+        linear-gradient(180deg, #07090e 0%, #0b0e14 55%, #080b10 100%);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 18px;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .sidebar {
+      background: rgba(17, 21, 29, 0.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 36px);
+      position: sticky;
+      top: 18px;
+      overflow: hidden;
+    }
+
+    .side-head {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #171b24, #131823);
+      color: #f3f6ff;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      display: block;
+      opacity: 0.95;
+    }
+
+    .side-head h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+      font-weight: 600;
+    }
+
+    .side-head p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      opacity: 0.86;
+    }
+
+    .side-body {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .search {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2b3241;
+      background: #0f141d;
+      font: inherit;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .new-project-btn {
+      width: 100%;
+      border: 1px solid #30384a;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #1f2430, #1a202b);
+      color: #edf1fc;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .new-project-btn:hover { filter: brightness(1.07); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 18, 0.45);
+      display: grid;
+      place-items: center;
+      z-index: 20;
+      padding: 16px;
+    }
+
+    .modal {
+      width: min(640px, 100%);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      padding: 14px;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .modal-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .icon-btn {
+      border: 1px solid #333a4a;
+      border-radius: 8px;
+      background: #121722;
+      color: #dbe2f6;
+      font: inherit;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field.span-2 { grid-column: span 2; }
+
+    .field label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9aa3b7;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid #333a4a;
+      border-radius: 8px;
+      background: #0f141d;
+      color: #e8ecf8;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 30px;
+    }
+
+    .sugg-btn {
+      border: 1px solid #353d50;
+      background: #121722;
+      color: #ced6ea;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .sugg-btn.active {
+      background: #232a38;
+      border-color: #3d4658;
+      color: #eff3ff;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .modal-status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5d6473;
+      min-height: 16px;
+    }
+
+    .nav-group { margin-bottom: 12px; }
+
+    .nav-title {
+      margin: 10px 6px;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .nav-btn {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 10px;
+      color: #cfd6ea;
+      padding: 10px;
+      margin-bottom: 4px;
+      text-align: left;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .nav-btn:hover {
+      background: #171d28;
+      border-color: #343c4e;
+    }
+
+    .nav-btn.active {
+      background: #232a38;
+      border-color: #3d4658;
+      color: #f2f5ff;
+    }
+
+    .chip {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid;
+      border-radius: 999px;
+      padding: 3px 7px;
+    }
+
+    .chip.present { color: #7dd9a5; border-color: #2b7a51; background: #16261f; }
+    .chip.past { color: #e8c48f; border-color: #7a5a2b; background: #241d13; }
+    .chip.priority { color: #f0aeb2; border-color: #78414a; background: #26171a; }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .topbar {
+      background: rgba(22, 28, 41, 0.95);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+
+    .title-wrap p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mini-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .mini {
+      border-radius: 999px;
+      border: 1px solid #3b455b;
+      background: #192132;
+      padding: 7px 11px;
+      font-size: 12px;
+      color: #cfd7ed;
+      white-space: nowrap;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+      align-content: start;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      animation: rise 240ms ease-out;
+    }
+
+    @keyframes rise {
+      from { transform: translateY(6px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .kvs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .kv {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid #39445a;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .kv-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .kv small {
+      display: block;
+      color: #9aa4ba;
+      font-size: 12px;
+      margin-bottom: 0;
+      font-weight: 500;
+    }
+
+    .kv b {
+      display: block;
+      font-size: 15px;
+      margin-top: 2px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      min-height: 20px;
+    }
+
+    .kv-edit {
+      border: 1px solid #3a445a;
+      border-radius: 6px;
+      background: #1b2435;
+      color: #c8d2e8;
+      padding: 1px 7px 2px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.42; }
+    .offerings {
+      margin: 10px 0 0;
+      padding-left: 0;
+      font-size: 13px;
+      color: #c9d3ea;
+    }
+
+    .offerings p {
+      margin: 7px 0 0;
+      line-height: 1.4;
+    }
+
+    .timeline-title {
+      margin-top: 22px !important;
+    }
+
+    .timeline {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .timeline li {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      gap: 10px;
+      border-left: 3px solid #5f677d;
+      padding: 7px 10px;
+      background: #192334;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .timeline time {
+      color: #b3bccf;
+      font-weight: 700;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table th, .table td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #3a455b;
+      vertical-align: top;
+    }
+
+    .table th {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .priority-high { color: var(--danger); font-weight: 700; }
+    .priority-med { color: var(--warn); font-weight: 700; }
+    .priority-low { color: var(--good); font-weight: 700; }
+
+    .doc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .doc-list a {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #30384a;
+      text-decoration: none;
+      color: #cfd8ee;
+      background: #111621;
+      font-size: 13px;
+    }
+
+    .doc-list a:hover {
+      border-color: #4a5670;
+      background: #171d2a;
+    }
+
+    .viewer-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .viewer-tools input[type="file"],
+    .viewer-tools button,
+    .viewer-tools input[type="number"] {
+      font: inherit;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 1px solid #323a4c;
+      background: #10151f;
+      color: var(--ink);
+      padding: 8px 10px;
+    }
+
+    .viewer-tools button {
+      cursor: pointer;
+      background: #232a38;
+      border-color: #3d4658;
+      color: #eef2ff;
+    }
+
+    .viewer-tools button.secondary {
+      background: #121722;
+      border-color: #333b4d;
+      color: #d1daef;
+    }
+
+    .viewer-frame {
+      width: 100%;
+      height: 640px;
+      border: 1px solid #3a455b;
+      border-radius: 10px;
+      background: #0d121b;
+    }
+
+    .dropzone {
+      border: 1px dashed #4a5770;
+      background: #192233;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: #97a2bb;
+      margin-bottom: 10px;
+    }
+
+    .dropzone.drag {
+      border-color: #4a556b;
+      background: #141a24;
+    }
+
+    .row-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .path-pill {
+      border: 1px solid #404b62;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #1a2334;
+      font-size: 12px;
+      color: #c9d2e8;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+    }
+
+    .crumb {
+      border: 0;
+      background: transparent;
+      color: #c9d2e8;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .crumb.arrow {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    .crumb.drop-target {
+      text-decoration: underline;
+    }
+
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .file-table th,
+    .file-table td {
+      border-bottom: 1px solid #39445a;
+      padding: 8px 6px;
+      text-align: left;
+    }
+
+    .file-table tbody tr {
+      cursor: pointer;
+    }
+
+    .file-table tbody tr.selected {
+      background: #253149;
+    }
+
+    .viewer-empty {
+      border: 1px dashed #465470;
+      border-radius: 10px;
+      background: #182234;
+      color: #9aa4ba;
+      font-size: 13px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #30384a;
+      background: #111621;
+    }
+
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric b { display: block; font-size: 24px; margin-top: 2px; }
+
+    .bar-chart {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 28px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #252d3d;
+      overflow: hidden;
+    }
+
+    .bar > i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #606b84, #454f63);
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 1150px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+      .content { grid-template-columns: 1fr; }
+      .kvs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .kvs, .metrics-grid { grid-template-columns: 1fr; }
+      .timeline li { grid-template-columns: 1fr; }
+      .title-wrap h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="side-head">
+        <div class="brand-row">
+          <img src="/static/assets/block-mark.svg" alt="Block" class="brand-mark">
+          <h1>Corp Dev</h1>
+        </div>
+        <p>AI Talent Acqui-hire Pipeline</p>
+      </div>
+      <div class="side-body">
+        <input id="searchInput" class="search" placeholder="Search companies or tags" />
+        <button id="openNewProjectModalBtn" class="new-project-btn" type="button">Add New Project</button>
+        <div class="nav-group">
+          <div class="nav-title">Portfolio</div>
+          <button id="globalBtn" class="nav-btn active"><span>Global View</span><span class="chip priority">Live</span></button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Present Targets</div>
+          <div id="presentList"></div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Past Deals</div>
+          <div id="pastList"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div class="title-wrap">
+          <h2 id="viewTitle">Global View</h2>
+          <p id="viewSubtitle">Cross-portfolio summary of AI talent acquisition activity.</p>
+        </div>
+        <div id="headerStats" class="mini-stats"></div>
+      </section>
+
+      <section class="content">
+        <div class="stack">
+          <article id="globalPanel" class="card">
+            <h3>Pipeline Snapshot</h3>
+            <div id="globalMetrics" class="metrics-grid"></div>
+            <h3>Talent Yield by Theme</h3>
+            <div id="themeBars" class="bar-chart"></div>
+          </article>
+
+          <article id="overviewPanel" class="card hidden">
+            <h3>Company Overview</h3>
+            <div id="overviewKvs" class="kvs"></div>
+            <p id="overviewNarrative" class="muted"></p>
+            <div id="offeringList" class="offerings hidden"></div>
+            <h3 class="timeline-title">Interaction Timeline</h3>
+            <ul id="timeline" class="timeline"></ul>
+          </article>
+
+          <article id="rosterPanel" class="card hidden">
+            <h3>Talent Roster</h3>
+            <div id="talentDropzone" class="dropzone">
+              Drag and drop a CSV/TSV talent sheet here, or <input id="talentUpload" type="file" accept=".csv,.tsv,.txt" style="font:inherit;font-size:12px;">.
+            </div>
+            <div id="talentStatus" class="muted" style="margin-bottom:8px;"></div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Title</th>
+                  <th>Location</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="rosterBody"></tbody>
+            </table>
+          </article>
+
+          <article id="projectDocsPanel" class="card hidden">
+            <h3>Project Documents</h3>
+            <div class="row-tools">
+              <div id="docBreadcrumbs" class="path-pill">/</div>
+              <button id="newFolderBtn" class="icon-btn" type="button">New Folder</button>
+              <input id="docUploadInput" type="file" multiple style="font:inherit;font-size:12px;">
+              <button id="viewDocBtn" class="icon-btn" type="button">View</button>
+              <button id="downloadDocBtn" class="icon-btn" type="button">Download</button>
+            </div>
+            <div id="docDropzone" class="dropzone">Drag and drop files here to upload into the current folder.</div>
+            <table class="file-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody id="docRows"></tbody>
+            </table>
+          </article>
+        </div>
+
+        <div class="stack">
+          <article id="docViewerPanel" class="card hidden">
+            <h3>Document Viewer</h3>
+            <div id="viewerMeta" class="muted" style="margin-bottom:8px;">Select a file from Project Documents to view it.</div>
+            <div id="viewerEmpty" class="viewer-empty">No document selected.</div>
+            <iframe id="docFrame" class="viewer-frame hidden" title="Document Viewer"></iframe>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="newProjectModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="newProjectTitle">
+    <form id="newProjectForm" class="modal">
+      <div class="modal-head">
+        <h3 id="newProjectTitle">Add New Project</h3>
+        <button id="closeNewProjectModalBtn" class="icon-btn" type="button">Close</button>
+      </div>
+      <div class="modal-grid">
+        <div class="field span-2">
+          <label for="companyNameInput">Company Name</label>
+          <input id="companyNameInput" type="text" placeholder="Zenlytic" required />
+        </div>
+        <div class="field span-2">
+          <label for="companyUrlInput">Company URL</label>
+          <input id="companyUrlInput" type="url" placeholder="https://www.company.com" required />
+        </div>
+        <div class="field">
+          <label for="dealLeadInput">Deal Lead</label>
+          <input id="dealLeadInput" type="text" placeholder="A. Kim" required />
+        </div>
+        <div class="field">
+          <label for="integrationLeadInput">Integration Lead</label>
+          <input id="integrationLeadInput" type="text" placeholder="R. Singh" required />
+        </div>
+        <div class="field span-2">
+          <label>Project Codename Suggestions</label>
+          <div id="codenameSuggestions" class="suggestions"></div>
+        </div>
+        <div class="field span-2">
+          <label for="projectCodenameInput">Project Codename (optional override)</label>
+          <input id="projectCodenameInput" type="text" placeholder="Atlas" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="icon-btn" type="button" id="cancelNewProjectBtn">Cancel</button>
+        <button class="new-project-btn" style="margin:0; width:auto;" type="submit">Research + Create Project</button>
+      </div>
+      <div id="intakeStatus" class="modal-status"></div>
+    </form>
+  </div>
+
+  <script>
+    const projects = [
+      {
+        id: "neuroforge",
+        name: "NeuroForge Labs",
+        status: "present",
+        stage: "Diligence",
+        priority: "High",
+        founded: 2021,
+        location: "San Francisco, CA",
+        teamSize: 24,
+        keyTheme: "Applied AI Agents",
+        valuation: "$62M implied",
+        totalFunding: "$21M",
+        lastTouch: "2026-03-03",
+        dealLead: "A. Kim",
+        integrationLead: "S. Porter",
+        codename: "Helix",
+        confidence: 78,
+        summary: "Applied agent orchestration team with strong infra-to-product crossover. Founder open to acqui-hire if key engineers retained with product charter.",
+        timeline: [
+          { date: "2026-02-12", note: "Founder intro via operator network" },
+          { date: "2026-02-21", note: "Technical deep-dive with model platform lead" },
+          { date: "2026-03-03", note: "Requested retention framework + role mapping" }
+        ],
+        talent: [
+          { name: "Sofia Patel", role: "CTO", area: "Multi-agent systems", priority: "High", notes: "Core architecture owner" },
+          { name: "Ethan Ross", role: "Staff ML Engineer", area: "Inference optimization", priority: "High", notes: "Latency and serving specialist" },
+          { name: "Mei Nakamura", role: "PM", area: "AI product strategy", priority: "Medium", notes: "Launches and eval process" }
+        ],
+        docs: [
+          { label: "Company Deck (Feb 2026)", type: "Company Materials", url: "#" },
+          { label: "Internal Strategy Memo", type: "Internal Docs", url: "#" },
+          { label: "Draft Retention Terms", type: "Legal Agreements", url: "#" }
+        ]
+      },
+      {
+        id: "vector-bio",
+        name: "VectorBio AI",
+        status: "present",
+        stage: "Initial Outreach",
+        priority: "Medium",
+        founded: 2022,
+        location: "Boston, MA",
+        teamSize: 17,
+        keyTheme: "Domain AI (Life Sciences)",
+        valuation: "$34M indicated",
+        totalFunding: "$14M",
+        lastTouch: "2026-03-01",
+        dealLead: "R. Singh",
+        integrationLead: "D. Cole",
+        codename: "Cinder",
+        confidence: 56,
+        summary: "Niche but high-caliber ML biology researchers. Early signs founders may prefer strategic partnership first.",
+        timeline: [
+          { date: "2026-02-17", note: "Inbound intro from investor" },
+          { date: "2026-02-27", note: "Intro call with CEO and Head of Research" },
+          { date: "2026-03-01", note: "Sent follow-up on integration options" }
+        ],
+        talent: [
+          { name: "Dr. Lena Wu", role: "Head of Research", area: "Protein modeling", priority: "High", notes: "Published at NeurIPS + Nature" },
+          { name: "Carlos Ibarra", role: "ML Engineer", area: "Data pipelines", priority: "Medium", notes: "Strong production track record" }
+        ],
+        docs: [
+          { label: "Investor Update Pack", type: "Company Materials", url: "#" },
+          { label: "Meeting Notes - 2026-02-27", type: "Internal Docs", url: "#" }
+        ]
+      },
+      {
+        id: "tensorwave",
+        name: "TensorWave Studio",
+        status: "past",
+        stage: "Closed",
+        priority: "High",
+        founded: 2019,
+        location: "New York, NY",
+        teamSize: 31,
+        keyTheme: "Generative Video",
+        valuation: "Closed at $88M EV",
+        totalFunding: "$33M",
+        lastTouch: "2025-11-14",
+        dealLead: "M. Rivera",
+        integrationLead: "P. Zhao",
+        codename: "Nova",
+        confidence: 100,
+        summary: "Successful acqui-hire with 12 key hires retained through year 1. Strong benchmark for integration design.",
+        timeline: [
+          { date: "2025-05-10", note: "Initiated outreach" },
+          { date: "2025-07-22", note: "Signed LOI" },
+          { date: "2025-09-18", note: "Purchase agreement executed" },
+          { date: "2025-11-14", note: "Post-close integration checkpoint" }
+        ],
+        talent: [
+          { name: "Hannah Green", role: "Founder", area: "Gen video models", priority: "High", notes: "Now Director, Creative AI" },
+          { name: "Noah Blake", role: "Principal Engineer", area: "GPU optimization", priority: "High", notes: "Retention signed 24 months" }
+        ],
+        docs: [
+          { label: "Signed Purchase Agreement", type: "Legal Agreements", url: "#" },
+          { label: "Integration Plan v3", type: "Internal Docs", url: "#" }
+        ]
+      },
+      {
+        id: "cortex-ops",
+        name: "CortexOps",
+        status: "past",
+        stage: "Closed",
+        priority: "Medium",
+        founded: 2020,
+        location: "Austin, TX",
+        teamSize: 13,
+        keyTheme: "AI Infra Tooling",
+        valuation: "Closed at $29M EV",
+        totalFunding: "$9M",
+        lastTouch: "2025-06-30",
+        dealLead: "J. Moore",
+        integrationLead: "L. Park",
+        codename: "Forge",
+        confidence: 100,
+        summary: "Infra-heavy team with strong developer tooling culture. Seven engineering hires retained and distributed across platform org.",
+        timeline: [
+          { date: "2025-02-05", note: "Mutual NDA signed" },
+          { date: "2025-04-11", note: "Management presentations completed" },
+          { date: "2025-05-29", note: "Definitive docs finalized" },
+          { date: "2025-06-30", note: "Close + onboarding" }
+        ],
+        talent: [
+          { name: "Priya Menon", role: "Head of Platform", area: "MLOps", priority: "High", notes: "Now Principal Platform Lead" },
+          { name: "Devon Price", role: "Staff Eng", area: "Dev tooling", priority: "Medium", notes: "Owning internal SDK" }
+        ],
+        docs: [
+          { label: "Quality of Earnings Summary", type: "Internal Docs", url: "#" },
+          { label: "Employment & Retention Schedules", type: "Legal Agreements", url: "#" }
+        ]
+      }
+    ];
+
+    const state = {
+      view: "global",
+      activeProjectId: null,
+      query: "",
+      codenameSuggestions: [],
+      projectDocs: {},
+      docViewerByProject: {}
+    };
+
+    const STAGE_OPTIONS = [
+      "Initial Intake",
+      "Initial Outreach",
+      "Diligence",
+      "LOI",
+      "Negotiation",
+      "Closed",
+      "Paused",
+      "Archived"
+    ];
+
+    const globalBtn = document.getElementById("globalBtn");
+    const presentList = document.getElementById("presentList");
+    const pastList = document.getElementById("pastList");
+    const searchInput = document.getElementById("searchInput");
+    const openNewProjectModalBtn = document.getElementById("openNewProjectModalBtn");
+    const newProjectModal = document.getElementById("newProjectModal");
+    const newProjectForm = document.getElementById("newProjectForm");
+    const closeNewProjectModalBtn = document.getElementById("closeNewProjectModalBtn");
+    const cancelNewProjectBtn = document.getElementById("cancelNewProjectBtn");
+    const companyNameInput = document.getElementById("companyNameInput");
+    const companyUrlInput = document.getElementById("companyUrlInput");
+    const dealLeadInput = document.getElementById("dealLeadInput");
+    const integrationLeadInput = document.getElementById("integrationLeadInput");
+    const projectCodenameInput = document.getElementById("projectCodenameInput");
+    const codenameSuggestions = document.getElementById("codenameSuggestions");
+    const intakeStatus = document.getElementById("intakeStatus");
+
+    const viewTitle = document.getElementById("viewTitle");
+    const viewSubtitle = document.getElementById("viewSubtitle");
+    const headerStats = document.getElementById("headerStats");
+
+    const globalPanel = document.getElementById("globalPanel");
+    const globalMetrics = document.getElementById("globalMetrics");
+    const themeBars = document.getElementById("themeBars");
+
+    const overviewPanel = document.getElementById("overviewPanel");
+    const overviewKvs = document.getElementById("overviewKvs");
+    const overviewNarrative = document.getElementById("overviewNarrative");
+    const offeringList = document.getElementById("offeringList");
+    const timeline = document.getElementById("timeline");
+
+    const rosterPanel = document.getElementById("rosterPanel");
+    const rosterBody = document.getElementById("rosterBody");
+    const talentDropzone = document.getElementById("talentDropzone");
+    const talentUpload = document.getElementById("talentUpload");
+    const talentStatus = document.getElementById("talentStatus");
+
+    const projectDocsPanel = document.getElementById("projectDocsPanel");
+    const docBreadcrumbs = document.getElementById("docBreadcrumbs");
+    const newFolderBtn = document.getElementById("newFolderBtn");
+    const docUploadInput = document.getElementById("docUploadInput");
+    const viewDocBtn = document.getElementById("viewDocBtn");
+    const downloadDocBtn = document.getElementById("downloadDocBtn");
+    const docDropzone = document.getElementById("docDropzone");
+    const docRows = document.getElementById("docRows");
+
+    const docViewerPanel = document.getElementById("docViewerPanel");
+    const viewerMeta = document.getElementById("viewerMeta");
+    const viewerEmpty = document.getElementById("viewerEmpty");
+    const docFrame = document.getElementById("docFrame");
+
+    function esc(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        .slice(0, 48);
+    }
+
+    function todayIso() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function normalizeUrl(url) {
+      const trimmed = (url || "").trim();
+      if (!trimmed) return "";
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) return trimmed;
+      return `https://${trimmed}`;
+    }
+
+    function deriveTheme(offerings) {
+      const corpus = (offerings || []).join(" ").toLowerCase();
+      if (corpus.includes("video") || corpus.includes("creative")) return "Generative Media";
+      if (corpus.includes("bio") || corpus.includes("health") || corpus.includes("protein")) return "Domain AI (Life Sciences)";
+      if (corpus.includes("agent")) return "Applied AI Agents";
+      if (corpus.includes("infra") || corpus.includes("platform") || corpus.includes("developer")) return "AI Infra Tooling";
+      return "AI Applications";
+    }
+
+    function normText(value) {
+      return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    }
+
+    function dedupeBySimilarity(lines, threshold = 0.72) {
+      const out = [];
+      const vectors = [];
+      (lines || []).forEach((line) => {
+        const cleaned = String(line || "").replace(/\s+/g, " ").trim();
+        if (!cleaned) return;
+        const tokenSet = new Set(normText(cleaned).split(" ").filter(Boolean));
+        if (!tokenSet.size) return;
+        let dup = false;
+        vectors.forEach((existing) => {
+          const shared = [...tokenSet].filter((x) => existing.has(x)).length;
+          const union = new Set([...tokenSet, ...existing]).size || 1;
+          if ((shared / union) >= threshold) dup = true;
+        });
+        if (dup) return;
+        out.push(cleaned);
+        vectors.push(tokenSet);
+      });
+      return out;
+    }
+
+    function isLowQualitySnippet(line) {
+      const text = normText(line);
+      const bad = [
+        "verified by gartner",
+        "choose your business software",
+        "software with confidence",
+        "explore in depth",
+        "real users",
+        "reviews and insights",
+        "read reviews",
+        "compare software",
+        "g2",
+        "capterra",
+        "trustradius",
+      ];
+      return bad.some((p) => text.includes(p));
+    }
+
+    function compactSummary(text) {
+      const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+      if (!cleaned) return "";
+      const parts = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
+      return parts.slice(0, 2).join(" ").slice(0, 420).trim();
+    }
+
+    function sanitizeResearch(summary, offerings) {
+      const merged = dedupeBySimilarity([summary, ...(offerings || [])], 0.68);
+      const primary = compactSummary((merged.find((m) => !isLowQualitySnippet(m)) || merged[0] || summary || ""));
+      const cleanedOfferings = dedupeBySimilarity((offerings || []).map(compactSummary), 0.68)
+        .filter((line) => !isLowQualitySnippet(line))
+        .filter((line) => normText(line) !== normText(primary))
+        .slice(0, 3);
+      return {
+        summary: primary || "Company added for initial corp dev review.",
+        offerings: cleanedOfferings,
+      };
+    }
+
+    function formatAboutLine(companyName, line) {
+      const cleaned = String(line || "").replace(/\s+/g, " ").trim();
+      if (!cleaned) return "";
+      const prefix = `about ${String(companyName || "").toLowerCase()}`;
+      const normalized = cleaned.toLowerCase();
+      if (normalized.startsWith(prefix)) {
+        const rest = cleaned.slice(prefix.length).trim().replace(/^[:\-\s]+/, "");
+        return `About ${companyName}: ${rest}`;
+      }
+      if (normalized.startsWith("about ")) {
+        const rest = cleaned.slice(6).trim().replace(/^[:\-\s]+/, "");
+        return `About ${companyName}: ${rest}`;
+      }
+      return cleaned;
+    }
+
+    function titleWord(value) {
+      const base = String(value || "").replace(/[^a-zA-Z]/g, "").toLowerCase();
+      if (!base) return "Astra";
+      return base.charAt(0).toUpperCase() + base.slice(1, 12);
+    }
+
+    function hashName(value) {
+      let hash = 0;
+      for (const ch of String(value || "")) {
+        hash = ((hash << 5) - hash + ch.charCodeAt(0)) | 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function generateCodenames(companyName) {
+      const roots = [
+        "Astra", "Vanta", "Cinder", "Onyx", "Beacon", "Harbor", "Summit", "Radian",
+        "Pulse", "Nexus", "Cipher", "Quill", "Ember", "Strata", "Forge", "Atlas",
+      ];
+      const suffixes = [
+        "One", "Core", "Peak", "Wave", "Arc", "Vale", "Point", "Drift",
+        "Stone", "Grid", "Field", "Pilot", "Bridge", "Signal", "Spark", "Frame",
+      ];
+      const cleaned = titleWord(companyName);
+      const h = hashName(companyName || "project");
+      const picks = new Set();
+      if (cleaned.toLowerCase().startsWith("zen")) picks.add("Zenith");
+      picks.add(roots[h % roots.length]);
+      picks.add(roots[(h + 5) % roots.length]);
+      picks.add(`${cleaned}${suffixes[(h + 9) % suffixes.length]}`);
+      return Array.from(picks).slice(0, 3);
+    }
+
+    function renderCodenameSuggestions() {
+      codenameSuggestions.innerHTML = state.codenameSuggestions
+        .map((name) => {
+          const active = (projectCodenameInput.value || "").trim().toLowerCase() === name.toLowerCase();
+          return `<button type="button" class="sugg-btn ${active ? "active" : ""}" data-codename="${esc(name)}">${esc(name)}</button>`;
+        })
+        .join("");
+      codenameSuggestions.querySelectorAll("[data-codename]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          projectCodenameInput.value = btn.getAttribute("data-codename") || "";
+          renderCodenameSuggestions();
+        });
+      });
+    }
+
+    function refreshSuggestedCodenames() {
+      state.codenameSuggestions = generateCodenames(companyNameInput.value);
+      if (!(projectCodenameInput.value || "").trim()) {
+        projectCodenameInput.value = state.codenameSuggestions[0] || "";
+      }
+      renderCodenameSuggestions();
+    }
+
+    function openNewProjectModal() {
+      intakeStatus.textContent = "";
+      newProjectModal.classList.remove("hidden");
+      if (!state.codenameSuggestions.length) {
+        refreshSuggestedCodenames();
+      } else {
+        renderCodenameSuggestions();
+      }
+      companyNameInput.focus();
+    }
+
+    function closeNewProjectModal() {
+      newProjectModal.classList.add("hidden");
+    }
+
+    function activeProject() {
+      return projects.find((x) => x.id === state.activeProjectId) || null;
+    }
+
+    function fmtBytes(bytes) {
+      const n = Number(bytes) || 0;
+      if (!n) return "-";
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+      return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function nowLabel() {
+      return new Date().toISOString().slice(0, 16).replace("T", " ");
+    }
+
+    function ensureProjectDocs(project) {
+      if (!project) return null;
+      if (state.projectDocs[project.id]) return state.projectDocs[project.id];
+      const docs = {
+        items: [],
+        currentPath: "/",
+        selectedId: null,
+      };
+      const addFolder = (name, parent = "/") => {
+        docs.items.push({
+          id: `fld-${project.id}-${slugify(name)}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          kind: "folder",
+          name,
+          parent,
+          updatedAt: nowLabel(),
+        });
+      };
+      addFolder("Company Materials");
+      addFolder("Internal Docs");
+      addFolder("Legal Agreements");
+      (project.docs || []).forEach((d) => {
+        const folderName = d.type || "Company Materials";
+        const folder = docs.items.find((x) => x.kind === "folder" && x.name === folderName && x.parent === "/");
+        const parent = folder ? joinPath("/", folder.name) : "/";
+        docs.items.push({
+          id: `file-${project.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          kind: "file",
+          name: d.label || "Document",
+          parent,
+          size: 0,
+          mime: "text/html",
+          url: d.url || "#",
+          external: true,
+          updatedAt: nowLabel(),
+        });
+      });
+      state.projectDocs[project.id] = docs;
+      return docs;
+    }
+
+    function ensureViewer(projectId) {
+      if (!state.docViewerByProject[projectId]) {
+        state.docViewerByProject[projectId] = { url: "", name: "", external: false };
+      }
+      return state.docViewerByProject[projectId];
+    }
+
+    function folderChildren(docs, path) {
+      return docs.items
+        .filter((x) => x.parent === path)
+        .sort((a, b) => {
+          if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+    }
+
+    function currentDocSelection(docs) {
+      return docs.items.find((x) => x.id === docs.selectedId) || null;
+    }
+
+    function clearDocSelection(docs) {
+      docs.selectedId = null;
+    }
+
+    function parseCsvLike(text, delimiter) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const ch = text[i];
+        const next = text[i + 1];
+        if (ch === '"') {
+          if (inQuotes && next === '"') {
+            cell += '"';
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === delimiter && !inQuotes) {
+          row.push(cell.trim());
+          cell = "";
+        } else if ((ch === "\n" || ch === "\r") && !inQuotes) {
+          if (ch === "\r" && next === "\n") i += 1;
+          row.push(cell.trim());
+          if (row.some((v) => v !== "")) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += ch;
+        }
+      }
+      if (cell.length || row.length) {
+        row.push(cell.trim());
+        if (row.some((v) => v !== "")) rows.push(row);
+      }
+      return rows;
+    }
+
+    function bestDelimiter(headerLine) {
+      const scores = [
+        [",", (headerLine.match(/,/g) || []).length],
+        ["\t", (headerLine.match(/\t/g) || []).length],
+        [";", (headerLine.match(/;/g) || []).length],
+      ].sort((a, b) => b[1] - a[1]);
+      return scores[0][1] > 0 ? scores[0][0] : ",";
+    }
+
+    function normalizeHeader(h) {
+      return String(h || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+
+    function findHeaderMap(headers) {
+      const norm = headers.map((h) => normalizeHeader(h));
+      const find = (keys) => norm.findIndex((h) => keys.some((k) => h.includes(k)));
+      return {
+        name: find(["name", "fullname", "employee", "candidate"]),
+        title: find(["title", "role", "position", "job"]),
+        location: find(["location", "city", "country", "based"]),
+        notes: find(["note", "comment", "remark", "summary", "bio"]),
+      };
+    }
+
+    async function importTalentFile(file) {
+      const text = await file.text();
+      const firstLine = text.split(/\r?\n/).find((x) => x.trim()) || "";
+      const delim = bestDelimiter(firstLine);
+      const rows = parseCsvLike(text, delim);
+      if (rows.length < 2) throw new Error("No data rows found in file.");
+      const headers = rows[0];
+      const map = findHeaderMap(headers);
+      const project = activeProject();
+      if (!project) throw new Error("No active project selected.");
+      const mapped = rows.slice(1).map((r) => ({
+        name: map.name >= 0 ? (r[map.name] || "").trim() : (r[0] || "").trim(),
+        title: map.title >= 0 ? (r[map.title] || "").trim() : (r[1] || "").trim(),
+        location: map.location >= 0 ? (r[map.location] || "").trim() : (r[2] || "").trim(),
+        notes: map.notes >= 0 ? (r[map.notes] || "").trim() : (r[3] || "").trim(),
+      })).filter((x) => x.name);
+      project.talent = mapped;
+      talentStatus.textContent = `Imported ${mapped.length} roster rows from ${file.name}.`;
+      renderProject();
+    }
+
+    function joinPath(base, name) {
+      if (base === "/") return `/${name}`;
+      return `${base}/${name}`;
+    }
+
+    function badgeFor(status) {
+      return status === "present" ? "present" : "past";
+    }
+
+    function filteredProjects(status) {
+      const q = state.query.trim().toLowerCase();
+      return projects
+        .filter(p => p.status === status)
+        .filter(p => !q || `${p.name} ${p.keyTheme} ${p.stage} ${p.codename || ""}`.toLowerCase().includes(q));
+    }
+
+    function renderNav() {
+      const makeBtn = (p) => {
+        const btn = document.createElement("button");
+        const isActive = state.view === "project" && state.activeProjectId === p.id;
+        btn.className = `nav-btn ${isActive ? "active" : ""}`;
+        btn.innerHTML = `<span>${esc(p.name)}</span><span class="chip ${badgeFor(p.status)}">${esc(p.stage)}</span>`;
+        btn.onclick = () => {
+          state.view = "project";
+          state.activeProjectId = p.id;
+          render();
+        };
+        return btn;
+      };
+
+      presentList.innerHTML = "";
+      pastList.innerHTML = "";
+
+      filteredProjects("present").forEach(p => presentList.appendChild(makeBtn(p)));
+      filteredProjects("past").forEach(p => pastList.appendChild(makeBtn(p)));
+
+      globalBtn.classList.toggle("active", state.view === "global");
+    }
+
+    function renderGlobal() {
+      const present = projects.filter(p => p.status === "present");
+      const past = projects.filter(p => p.status === "past");
+      const allTalent = projects.reduce((sum, p) => sum + p.talent.length, 0);
+      const highPriority = projects.reduce((sum, p) => sum + p.talent.filter(t => t.priority === "High").length, 0);
+
+      viewTitle.textContent = "Global View";
+      viewSubtitle.textContent = "Cross-portfolio summary of AI talent acquisition activity.";
+      headerStats.innerHTML = [
+        `Open deals: <b>${present.length}</b>`,
+        `Closed deals: <b>${past.length}</b>`,
+        `Tracked talent: <b>${allTalent}</b>`
+      ].map(v => `<div class="mini">${v}</div>`).join("");
+
+      globalMetrics.innerHTML = [
+        ["Open Opportunities", present.length],
+        ["Closed Acqui-hires", past.length],
+        ["High-Priority Individuals", highPriority],
+        ["Avg Team Size", Math.round(projects.reduce((a, p) => a + p.teamSize, 0) / projects.length)]
+      ].map(([k, v]) => `<div class="metric"><span>${k}</span><b>${v}</b></div>`).join("");
+
+      const themes = {};
+      projects.forEach(p => {
+        themes[p.keyTheme] = (themes[p.keyTheme] || 0) + p.talent.length;
+      });
+      const max = Math.max(1, ...Object.values(themes));
+      themeBars.innerHTML = Object.entries(themes)
+        .sort((a, b) => b[1] - a[1])
+        .map(([theme, count]) => {
+          const width = Math.round((count / max) * 100);
+          return `
+            <div class="bar-row">
+              <span>${esc(theme)}</span>
+              <span class="bar"><i style="width:${width}%"></i></span>
+              <b>${count}</b>
+            </div>
+          `;
+        }).join("");
+
+      globalPanel.classList.remove("hidden");
+      overviewPanel.classList.add("hidden");
+      rosterPanel.classList.add("hidden");
+      projectDocsPanel.classList.add("hidden");
+      docViewerPanel.classList.add("hidden");
+    }
+
+    function priorityClass(p) {
+      if (p === "High") return "priority-high";
+      if (p === "Medium") return "priority-med";
+      return "priority-low";
+    }
+
+    function renderDocExplorer(project) {
+      const docs = ensureProjectDocs(project);
+      if (!docs) return;
+      const parts = docs.currentPath.split("/").filter(Boolean);
+      let running = "/";
+      const crumbs = [{ label: "root", path: "/" }];
+      parts.forEach((part) => {
+        running = joinPath(running, part);
+        crumbs.push({ label: part, path: running });
+      });
+      docBreadcrumbs.innerHTML = crumbs.map((c, idx) => `
+        ${idx > 0 ? '<span class="crumb arrow">→</span>' : ""}
+        <button type="button" class="crumb drop-target" data-path="${esc(c.path)}">${esc(c.label)}</button>
+      `).join("");
+      docBreadcrumbs.querySelectorAll("[data-path]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          docs.currentPath = btn.getAttribute("data-path") || "/";
+          clearDocSelection(docs);
+          renderDocExplorer(project);
+        });
+        btn.addEventListener("dragover", (e) => e.preventDefault());
+        btn.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const draggedId = e.dataTransfer.getData("text/plain");
+          if (!draggedId) return;
+          const dragged = docs.items.find((x) => x.id === draggedId);
+          if (!dragged) return;
+          const targetPath = btn.getAttribute("data-path") || "/";
+          if (dragged.kind === "folder" && targetPath.startsWith(joinPath(docs.currentPath, dragged.name))) return;
+          dragged.parent = targetPath;
+          dragged.updatedAt = nowLabel();
+          renderDocExplorer(project);
+        });
+      });
+      const items = folderChildren(docs, docs.currentPath);
+      const selected = currentDocSelection(docs);
+      docRows.innerHTML = items.map((item) => `
+        <tr data-id="${esc(item.id)}" data-kind="${esc(item.kind)}" data-name="${esc(item.name)}" class="${selected && selected.id === item.id ? "selected" : ""}" draggable="true">
+          <td>${item.kind === "folder" ? "📁" : "📄"} ${esc(item.name)}</td>
+          <td>${esc(item.kind)}</td>
+          <td>${item.kind === "file" ? esc(fmtBytes(item.size)) : "-"}</td>
+          <td>${esc(item.updatedAt || "-")}</td>
+        </tr>
+      `).join("");
+      docRows.querySelectorAll("tr[data-id]").forEach((row) => {
+        row.addEventListener("click", () => {
+          docs.selectedId = row.getAttribute("data-id");
+          renderDocExplorer(project);
+        });
+        row.addEventListener("dblclick", () => {
+          const item = docs.items.find((x) => x.id === row.getAttribute("data-id"));
+          if (!item) return;
+          if (item.kind === "folder") {
+            docs.currentPath = joinPath(docs.currentPath, item.name);
+            clearDocSelection(docs);
+            renderDocExplorer(project);
+          } else {
+            viewSelectedDoc();
+          }
+        });
+        row.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", row.getAttribute("data-id") || "");
+        });
+        if (row.getAttribute("data-kind") === "folder") {
+          row.addEventListener("dragover", (e) => e.preventDefault());
+          row.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const draggedId = e.dataTransfer.getData("text/plain");
+            const targetId = row.getAttribute("data-id");
+            if (!draggedId || !targetId || draggedId === targetId) return;
+            const dragged = docs.items.find((x) => x.id === draggedId);
+            const target = docs.items.find((x) => x.id === targetId);
+            if (!dragged || !target || target.kind !== "folder") return;
+            const targetPath = joinPath(docs.currentPath, target.name);
+            if (dragged.kind === "folder" && targetPath.startsWith(joinPath(docs.currentPath, dragged.name))) return;
+            dragged.parent = targetPath;
+            dragged.updatedAt = nowLabel();
+            renderDocExplorer(project);
+          });
+        }
+      });
+      viewDocBtn.disabled = !(selected && selected.kind === "file");
+      downloadDocBtn.disabled = !(selected && selected.kind === "file");
+    }
+
+    function isInlineViewable(item) {
+      const name = (item.name || "").toLowerCase();
+      const mime = (item.mime || "").toLowerCase();
+      if (mime.startsWith("image/") || mime.startsWith("text/")) return true;
+      if (mime.includes("pdf") || mime.includes("json") || mime.includes("csv")) return true;
+      return [".pdf", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".txt", ".md", ".csv", ".tsv", ".json", ".html"].some((ext) => name.endsWith(ext));
+    }
+
+    function renderDocViewer(project) {
+      const viewer = ensureViewer(project.id);
+      if (!viewer.url) {
+        viewerMeta.textContent = "Select a file from Project Documents to view it.";
+        viewerEmpty.classList.remove("hidden");
+        docFrame.classList.add("hidden");
+        docFrame.removeAttribute("src");
+        return;
+      }
+      viewerMeta.textContent = `Viewing: ${viewer.name}${viewer.external ? " (external source)" : ""}`;
+      if (!viewer.inline) {
+        viewerEmpty.innerHTML = `Preview is not supported for this file type. <a href="${esc(viewer.url)}" target="_blank" rel="noreferrer">Open in new tab</a>.`;
+        viewerEmpty.classList.remove("hidden");
+        docFrame.classList.add("hidden");
+        docFrame.removeAttribute("src");
+        return;
+      }
+      viewerEmpty.textContent = "No document selected.";
+      viewerEmpty.classList.add("hidden");
+      docFrame.classList.remove("hidden");
+      docFrame.src = viewer.url;
+    }
+
+    function setViewerFromFile(project, fileItem) {
+      const viewer = ensureViewer(project.id);
+      viewer.url = fileItem.url || "";
+      viewer.name = fileItem.name || "Document";
+      viewer.external = Boolean(fileItem.external);
+      viewer.inline = isInlineViewable(fileItem);
+      renderDocViewer(project);
+    }
+
+    function renderProject() {
+      const p = projects.find(x => x.id === state.activeProjectId);
+      if (!p) {
+        state.view = "global";
+        render();
+        return;
+      }
+
+      viewTitle.textContent = `${p.name} (Project ${p.codename || "TBD"})`;
+      viewSubtitle.textContent = `${p.stage} | ${p.keyTheme} | Codename ${p.codename || "TBD"} | Last interaction ${p.lastTouch}`;
+      headerStats.innerHTML = [
+        `Deal lead: <b>${esc(p.dealLead)}</b>`,
+        `Integration lead: <b>${esc(p.integrationLead || "Unassigned")}</b>`,
+        `Talent mapped: <b>${p.talent.length}</b>`,
+        `Confidence: <b>${p.confidence}%</b>`
+      ].map(v => `<div class="mini">${v}</div>`).join("");
+
+      const renderCard = (label, value, key) => `
+        <div class="kv">
+          <div class="kv-head">
+            <small>${esc(label)}</small>
+            <button class="kv-edit" type="button" data-edit="${esc(key)}" aria-label="Edit ${esc(label)}">✎</button>
+          </div>
+          <b>${esc(value)}</b>
+        </div>
+      `;
+      overviewKvs.innerHTML = `
+        ${renderCard("Status", p.stage, "stage")}
+        ${renderCard("Priority", p.priority, "priority")}
+        ${renderCard("Founded", p.founded, "founded")}
+        ${renderCard("HQ", p.location, "location")}
+        ${renderCard("Team Size", p.teamSize, "teamSize")}
+        ${renderCard("Codename", p.codename || "TBD", "codename")}
+        ${renderCard("Valuation", p.valuation, "valuation")}
+        ${renderCard("Total Funding Raised", p.totalFunding || "Unknown", "totalFunding")}
+      `;
+      overviewKvs.querySelectorAll("[data-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-edit") || "";
+          if (key === "stage") {
+            const entered = window.prompt(`Set status. Options: ${STAGE_OPTIONS.join(", ")}`, p.stage || "");
+            if (!entered) return;
+            const next = STAGE_OPTIONS.find((s) => s.toLowerCase() === entered.trim().toLowerCase());
+            if (!next) return;
+            p.stage = next;
+            p.lastTouch = todayIso();
+            p.status = (next === "Closed" || next === "Archived") ? "past" : "present";
+            render();
+            return;
+          }
+          const current = p[key] ?? "";
+          const label = key === "teamSize" ? "Team Size" : key;
+          const entered = window.prompt(`Edit ${label}`, String(current));
+          if (entered === null) return;
+          p[key] = key === "teamSize" ? (Number(entered) || 0) : entered.trim();
+          if (key === "codename") viewTitle.textContent = `${p.name} (Project ${p.codename || "TBD"})`;
+          render();
+        });
+      });
+
+      const cleaned = sanitizeResearch(p.summary, p.offerings || []);
+      p.summary = cleaned.summary;
+      p.offerings = cleaned.offerings;
+      overviewNarrative.textContent = p.summary;
+      if (Array.isArray(p.offerings) && p.offerings.length > 0) {
+        offeringList.innerHTML = p.offerings
+          .map((item) => `<p>${esc(formatAboutLine(p.name, item))}</p>`)
+          .join("");
+        offeringList.classList.remove("hidden");
+      } else {
+        offeringList.innerHTML = "";
+        offeringList.classList.add("hidden");
+      }
+
+      timeline.innerHTML = p.timeline
+        .map(t => `<li><time>${esc(t.date)}</time><span>${esc(t.note)}</span></li>`)
+        .join("");
+
+      rosterBody.innerHTML = p.talent.map(t => `
+        <tr>
+          <td>${esc(t.name)}</td>
+          <td>${esc(t.title || t.role || "")}</td>
+          <td>${esc(t.location || t.area || "")}</td>
+          <td>${esc(t.notes)}</td>
+        </tr>
+      `).join("");
+      renderDocExplorer(p);
+      renderDocViewer(p);
+
+      globalPanel.classList.add("hidden");
+      overviewPanel.classList.remove("hidden");
+      rosterPanel.classList.remove("hidden");
+      projectDocsPanel.classList.remove("hidden");
+      docViewerPanel.classList.remove("hidden");
+    }
+
+    function render() {
+      renderNav();
+      if (state.view === "global") renderGlobal();
+      else renderProject();
+    }
+
+    async function addProjectFromModal(event) {
+      event.preventDefault();
+      const name = (companyNameInput.value || "").trim();
+      const rawUrl = (companyUrlInput.value || "").trim();
+      const dealLead = (dealLeadInput.value || "").trim();
+      const integrationLead = (integrationLeadInput.value || "").trim();
+      const codename = (projectCodenameInput.value || "").trim();
+      const url = normalizeUrl(rawUrl);
+      if (!name || !url || !dealLead || !integrationLead) {
+        intakeStatus.textContent = "Complete company name, URL, deal lead, and integration lead.";
+        return;
+      }
+
+      intakeStatus.textContent = "Researching website and search results...";
+      try {
+        const response = await fetch(`/api/company-research?name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}`);
+        const contentType = (response.headers.get("content-type") || "").toLowerCase();
+        let payload = {};
+        if (contentType.includes("application/json")) {
+          payload = await response.json();
+        } else {
+          const raw = await response.text();
+          if (raw.trim().toLowerCase().startsWith("<!doctype") || raw.trim().startsWith("<html")) {
+            throw new Error("Server returned HTML instead of JSON. Restart the server so the new API route is loaded.");
+          }
+          throw new Error(raw.slice(0, 180) || "Unexpected non-JSON response from server");
+        }
+        if (!response.ok) {
+          throw new Error(payload.error || "Unable to research company");
+        }
+
+        const idBase = slugify(name) || `company-${Date.now()}`;
+        const used = new Set(projects.map(p => p.id));
+        let id = idBase;
+        let n = 2;
+        while (used.has(id)) {
+          id = `${idBase}-${n}`;
+          n += 1;
+        }
+
+        const rawOfferings = Array.isArray(payload.offerings) ? payload.offerings : [];
+        const cleanedResearch = sanitizeResearch(payload.summary || "", rawOfferings);
+        const offerings = cleanedResearch.offerings;
+        const summary = cleanedResearch.summary || `${name} added for initial corp dev review.`;
+        const today = todayIso();
+        const hasSearchData = Array.isArray(payload.sources?.search_snippets) && payload.sources.search_snippets.length > 0;
+        const confidence = payload.sources?.meta_description_found ? 70 : (hasSearchData ? 55 : 35);
+
+        projects.unshift({
+          id,
+          name,
+          status: "present",
+          stage: "Initial Intake",
+          priority: "Medium",
+          founded: "Unknown",
+          location: payload.domain || "Unknown",
+          teamSize: 0,
+          keyTheme: deriveTheme(offerings),
+          valuation: "TBD",
+          totalFunding: "Unknown",
+          lastTouch: today,
+          dealLead,
+          integrationLead,
+          codename: codename || state.codenameSuggestions[0] || "TBD",
+          confidence,
+          summary,
+          offerings,
+          timeline: [
+            { date: today, note: `Project created as ${codename || state.codenameSuggestions[0] || "TBD"}.` },
+            { date: today, note: "Auto-research completed from website and internet search snippets." }
+          ],
+          talent: [],
+          docs: [
+            { label: "Company Website", type: "Company Materials", url: payload.normalized_url || url },
+            { label: "Auto-Research Notes", type: "Internal Docs", url: "#" }
+          ]
+        });
+
+        state.view = "project";
+        state.activeProjectId = id;
+        newProjectForm.reset();
+        state.codenameSuggestions = [];
+        intakeStatus.textContent = "Project added. Review and refine fields in the project panel.";
+        closeNewProjectModal();
+        render();
+      } catch (err) {
+        intakeStatus.textContent = `Research failed: ${err.message}`;
+      }
+    }
+
+    searchInput.addEventListener("input", (e) => {
+      state.query = e.target.value || "";
+      renderNav();
+    });
+
+    openNewProjectModalBtn.addEventListener("click", openNewProjectModal);
+    closeNewProjectModalBtn.addEventListener("click", closeNewProjectModal);
+    cancelNewProjectBtn.addEventListener("click", closeNewProjectModal);
+    newProjectModal.addEventListener("click", (event) => {
+      if (event.target === newProjectModal) closeNewProjectModal();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !newProjectModal.classList.contains("hidden")) {
+        closeNewProjectModal();
+      }
+    });
+    companyNameInput.addEventListener("input", refreshSuggestedCodenames);
+    projectCodenameInput.addEventListener("input", renderCodenameSuggestions);
+    newProjectForm.addEventListener("submit", addProjectFromModal);
+
+    globalBtn.addEventListener("click", () => {
+      state.view = "global";
+      state.activeProjectId = null;
+      render();
+    });
+
+    function ingestDocFiles(fileList) {
+      const p = activeProject();
+      if (!p) return;
+      const docs = ensureProjectDocs(p);
+      const files = Array.from(fileList || []);
+      files.forEach((file) => {
+        const url = URL.createObjectURL(file);
+        docs.items.push({
+          id: `file-${p.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          kind: "file",
+          name: file.name,
+          parent: docs.currentPath,
+          size: file.size,
+          mime: file.type || "application/octet-stream",
+          url,
+          fileObj: file,
+          external: false,
+          updatedAt: nowLabel(),
+        });
+      });
+      renderDocExplorer(p);
+    }
+
+    function viewSelectedDoc() {
+      const p = activeProject();
+      if (!p) return;
+      const docs = ensureProjectDocs(p);
+      const item = currentDocSelection(docs);
+      if (!item || item.kind !== "file") return;
+      if (item.url === "#") {
+        viewerMeta.textContent = `Selected document "${item.name}" has no attached URL yet.`;
+        viewerEmpty.classList.remove("hidden");
+        docFrame.classList.add("hidden");
+        return;
+      }
+      setViewerFromFile(p, item);
+    }
+
+    function downloadSelectedDoc() {
+      const p = activeProject();
+      if (!p) return;
+      const docs = ensureProjectDocs(p);
+      const item = currentDocSelection(docs);
+      if (!item || item.kind !== "file") return;
+      if (item.external) {
+        window.open(item.url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = item.url;
+      a.download = item.name || "document";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    docUploadInput.addEventListener("change", (e) => {
+      ingestDocFiles(e.target.files);
+      e.target.value = "";
+    });
+
+    docDropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      docDropzone.classList.add("drag");
+    });
+    docDropzone.addEventListener("dragleave", () => docDropzone.classList.remove("drag"));
+    docDropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      docDropzone.classList.remove("drag");
+      ingestDocFiles(e.dataTransfer.files);
+    });
+
+    newFolderBtn.addEventListener("click", () => {
+      const p = activeProject();
+      if (!p) return;
+      const docs = ensureProjectDocs(p);
+      const name = window.prompt("Folder name");
+      if (!name || !name.trim()) return;
+      const safeName = name.trim().replaceAll("/", "-");
+      docs.items.push({
+        id: `fld-${p.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        kind: "folder",
+        name: safeName,
+        parent: docs.currentPath,
+        updatedAt: nowLabel(),
+      });
+      renderDocExplorer(p);
+    });
+
+    viewDocBtn.addEventListener("click", viewSelectedDoc);
+    downloadDocBtn.addEventListener("click", downloadSelectedDoc);
+
+    talentDropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      talentDropzone.classList.add("drag");
+    });
+    talentDropzone.addEventListener("dragleave", () => talentDropzone.classList.remove("drag"));
+    talentDropzone.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      talentDropzone.classList.remove("drag");
+      const [file] = Array.from(e.dataTransfer.files || []);
+      if (!file) return;
+      try {
+        await importTalentFile(file);
+      } catch (err) {
+        talentStatus.textContent = `Talent import failed: ${err.message}`;
+      }
+    });
+    talentUpload.addEventListener("change", async (e) => {
+      const [file] = Array.from(e.target.files || []);
+      if (!file) return;
+      try {
+        await importTalentFile(file);
+      } catch (err) {
+        talentStatus.textContent = `Talent import failed: ${err.message}`;
+      }
+      e.target.value = "";
+    });
+
+    render();
+  </script>
+</body>
+</html>
