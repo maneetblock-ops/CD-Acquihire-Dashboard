@@ -4,9 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import errno
+import io
 import json
 import re
+import zipfile
+import xml.etree.ElementTree as ET
 from html import unescape
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,6 +23,7 @@ DEFAULT_PORT = 8610
 MAX_PORT_ATTEMPTS = 25
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 MAX_BODY_BYTES = 500_000
+XLSX_MAX_BYTES = 8_000_000
 
 
 def json_response(handler: SimpleHTTPRequestHandler, payload: dict, status: int = 200) -> None:
@@ -192,6 +197,199 @@ def build_company_research(name: str, company_url: str) -> dict:
     }
 
 
+def parse_xlsx_talent_rows(xlsx_bytes: bytes) -> list[dict]:
+    """Parse key talent fields from an XLSX census-style workbook."""
+    if len(xlsx_bytes) > XLSX_MAX_BYTES:
+        raise ValueError("Excel file is too large.")
+
+    ns_main = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    ns_rel = {"r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"}
+    rel_type_sheet = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+
+    def col_from_ref(cell_ref: str) -> str:
+        return "".join(ch for ch in cell_ref if ch.isalpha())
+
+    def norm(value: str) -> str:
+        return re.sub(r"[^a-z0-9]+", "", (value or "").lower())
+
+    def clean_text(value: str) -> str:
+        return re.sub(r"\s+", " ", (value or "")).strip()
+
+    def safe_value(cells: dict, key: str) -> str:
+        return clean_text(cells.get(key, ""))
+
+    with zipfile.ZipFile(io.BytesIO(xlsx_bytes)) as zf:
+        names = set(zf.namelist())
+        if "xl/workbook.xml" not in names:
+            raise ValueError("Invalid XLSX: missing workbook.xml")
+
+        shared_strings: list[str] = []
+        if "xl/sharedStrings.xml" in names:
+            root = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+            for si in root.findall("a:si", ns_main):
+                text = "".join((t.text or "") for t in si.findall(".//a:t", ns_main))
+                shared_strings.append(text)
+
+        wb = ET.fromstring(zf.read("xl/workbook.xml"))
+        wb_rels = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+        rel_map: dict[str, tuple[str, str]] = {}
+        for rel in wb_rels:
+            rel_map[rel.attrib.get("Id", "")] = (rel.attrib.get("Target", ""), rel.attrib.get("Type", ""))
+
+        first_sheet_target = ""
+        for sheet in wb.findall("a:sheets/a:sheet", {**ns_main, **ns_rel}):
+            rel_id = sheet.attrib.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", "")
+            target, rel_type = rel_map.get(rel_id, ("", ""))
+            if rel_type == rel_type_sheet or target:
+                first_sheet_target = target
+                break
+        if not first_sheet_target:
+            raise ValueError("Invalid XLSX: no worksheet found")
+
+        if not first_sheet_target.startswith("xl/"):
+            sheet_path = f"xl/{first_sheet_target.lstrip('/')}"
+        else:
+            sheet_path = first_sheet_target
+        sheet_path = str(Path(sheet_path))
+        if sheet_path not in names:
+            raise ValueError("Invalid XLSX: worksheet file missing")
+
+        sheet_rels_path = ""
+        if "/" in sheet_path:
+            parent, filename = sheet_path.rsplit("/", 1)
+            sheet_rels_path = f"{parent}/_rels/{filename}.rels"
+        hyperlink_targets: dict[str, str] = {}
+        if sheet_rels_path in names:
+            rels_root = ET.fromstring(zf.read(sheet_rels_path))
+            for rel in rels_root:
+                rid = rel.attrib.get("Id", "")
+                target = rel.attrib.get("Target", "")
+                if rid and target:
+                    hyperlink_targets[rid] = target
+
+        sheet_root = ET.fromstring(zf.read(sheet_path))
+        cell_hyperlink_map: dict[str, str] = {}
+        for hl in sheet_root.findall(".//a:hyperlinks/a:hyperlink", {**ns_main, **ns_rel}):
+            cell_ref = hl.attrib.get("ref", "")
+            if not cell_ref:
+                continue
+            rid = hl.attrib.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", "")
+            location = hl.attrib.get("location", "")
+            target = hyperlink_targets.get(rid, "") if rid else ""
+            if not target and location:
+                target = location
+            if target:
+                cell_hyperlink_map[cell_ref] = target
+
+        row_cells: list[dict[str, str]] = []
+        row_links: list[dict[str, str]] = []
+        for row in sheet_root.findall(".//a:sheetData/a:row", ns_main):
+            cells: dict[str, str] = {}
+            links: dict[str, str] = {}
+            for cell in row.findall("a:c", ns_main):
+                cell_ref = cell.attrib.get("r", "")
+                col = col_from_ref(cell_ref)
+                if not col:
+                    continue
+
+                value = ""
+                cell_type = cell.attrib.get("t", "")
+                if cell_type == "inlineStr":
+                    value = "".join((t.text or "") for t in cell.findall(".//a:t", ns_main))
+                else:
+                    v = cell.find("a:v", ns_main)
+                    if v is not None and v.text is not None:
+                        value = v.text
+                if cell_type == "s" and value.isdigit():
+                    idx = int(value)
+                    if 0 <= idx < len(shared_strings):
+                        value = shared_strings[idx]
+                value = clean_text(unescape(value))
+                cells[col] = value
+                if cell_ref in cell_hyperlink_map:
+                    links[col] = cell_hyperlink_map[cell_ref]
+
+            if any(v for v in cells.values()):
+                row_cells.append(cells)
+                row_links.append(links)
+
+        if not row_cells:
+            return []
+
+        expected_headers = {
+            "first_name": {"preferredfirstname", "legalfirstname", "firstname"},
+            "last_name": {"preferredlastname", "legallastname", "lastname"},
+            "title": {"currentbusinesstitle", "title", "currenttitle"},
+            "location_city": {"currentworklocationcity", "city", "locationcity"},
+            "location_state": {"currentworklocationstate", "state", "locationstate"},
+            "location_country": {"currentworklocationcountry", "country", "locationcountry"},
+            "linkedin": {"linkedinprofilelinkifavailable", "linkedinprofilelink", "linkedin", "linkedinurl"},
+        }
+
+        header_idx = -1
+        header_map: dict[str, str] = {}
+        for i, cells in enumerate(row_cells):
+            normalized = {norm(v): col for col, v in cells.items() if v}
+            candidate_map: dict[str, str] = {}
+            for key, aliases in expected_headers.items():
+                col = next((normalized[a] for a in aliases if a in normalized), "")
+                if col:
+                    candidate_map[key] = col
+            if {"first_name", "last_name", "title"}.issubset(set(candidate_map.keys())):
+                header_idx = i
+                header_map = candidate_map
+                break
+
+        if header_idx < 0:
+            return []
+
+        out: list[dict] = []
+        for i in range(header_idx + 1, len(row_cells)):
+            cells = row_cells[i]
+            links = row_links[i] if i < len(row_links) else {}
+            first = safe_value(cells, header_map.get("first_name", ""))
+            last = safe_value(cells, header_map.get("last_name", ""))
+            name = clean_text(f"{first} {last}")
+            title = safe_value(cells, header_map.get("title", ""))
+
+            city = safe_value(cells, header_map.get("location_city", ""))
+            state = safe_value(cells, header_map.get("location_state", ""))
+            country = safe_value(cells, header_map.get("location_country", ""))
+            location_parts = [part for part in (city, state, country) if part]
+            location = ", ".join(location_parts)
+
+            linkedin_col = header_map.get("linkedin", "")
+            linkedin_raw = safe_value(cells, linkedin_col)
+            linkedin_href = clean_text(links.get(linkedin_col, ""))
+            linkedin = linkedin_href or linkedin_raw
+            if linkedin and linkedin.lower() == "link" and not linkedin_href:
+                linkedin = ""
+            if linkedin and not re.match(r"^https?://", linkedin, re.IGNORECASE):
+                if "linkedin.com" in linkedin.lower():
+                    linkedin = f"https://{linkedin.lstrip('/')}"
+
+            # Skip obvious instructional/template rows.
+            if not name and not title:
+                continue
+            if norm(name) in {"janedoe", "doejane"} and norm(title) == norm("Director, Product Management"):
+                continue
+            if any(token in norm(name) for token in ("idnumber", "username")):
+                continue
+
+            if not name:
+                continue
+            out.append(
+                {
+                    "name": name,
+                    "title": title,
+                    "location": location,
+                    "linkedin": linkedin,
+                }
+            )
+
+        return out
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -214,6 +412,49 @@ class Handler(SimpleHTTPRequestHandler):
             return json_response(self, payload)
 
         return super().do_GET()
+
+    def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+
+        if parsed.path == "/api/parse-talent-sheet":
+            content_length = int(self.headers.get("Content-Length", "0") or "0")
+            if content_length <= 0 or content_length > XLSX_MAX_BYTES * 2:
+                return json_response(self, {"error": "Invalid request size."}, status=400)
+
+            raw = self.rfile.read(content_length)
+            try:
+                payload = json.loads(raw.decode("utf-8"))
+            except json.JSONDecodeError:
+                return json_response(self, {"error": "Invalid JSON body."}, status=400)
+
+            filename = str(payload.get("filename", "")).strip()
+            data_b64 = str(payload.get("data", "")).strip()
+            if not data_b64:
+                return json_response(self, {"error": "Missing file data."}, status=400)
+            if filename and not filename.lower().endswith(".xlsx"):
+                return json_response(
+                    self,
+                    {"error": "Unsupported Excel format. Please upload .xlsx (not legacy .xls)."},
+                    status=400,
+                )
+
+            try:
+                file_bytes = base64.b64decode(data_b64, validate=True)
+                rows = parse_xlsx_talent_rows(file_bytes)
+            except (ValueError, zipfile.BadZipFile) as exc:
+                return json_response(self, {"error": f"Excel parse failed: {exc}"}, status=400)
+            except Exception as exc:  # noqa: BLE001
+                return json_response(self, {"error": f"Excel parse failed: {exc}"}, status=502)
+
+            return json_response(
+                self,
+                {
+                    "rows": rows,
+                    "count": len(rows),
+                },
+            )
+
+        return json_response(self, {"error": "Not found"}, status=404)
 
 
 if __name__ == "__main__":

@@ -852,10 +852,10 @@
       background:
         linear-gradient(
           90deg,
-          rgba(59, 130, 246, 0.9) 0%,
-          rgba(168, 85, 247, 0.8) 35%,
-          rgba(16, 185, 129, 0.8) 68%,
-          rgba(245, 158, 11, 0.85) 100%
+          rgba(59, 130, 246, 0.95) 0%,
+          rgba(99, 102, 241, 0.92) 35%,
+          rgba(168, 85, 247, 0.9) 58%,
+          rgba(239, 68, 68, 0.92) 100%
         );
       overflow: visible;
     }
@@ -926,6 +926,27 @@
       border-bottom: 1px solid var(--line);
       padding: 7px 6px;
       text-align: left;
+    }
+
+    .talent-select-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .talent-select-label input[type="checkbox"] {
+      inline-size: 14px;
+      block-size: 14px;
+      accent-color: var(--brand-2);
+      cursor: pointer;
+    }
+
+    .talent-select-label .talent-name {
+      color: var(--ink);
+      font-weight: 520;
+      letter-spacing: -0.01em;
     }
 
     .comp-toggle-list {
@@ -2088,6 +2109,80 @@
       letter-spacing: 0.08em;
     }
 
+    .table td a {
+      color: #8fd3ff;
+      text-decoration-color: rgba(143, 211, 255, 0.42);
+      text-underline-offset: 2px;
+      word-break: break-word;
+    }
+
+    .table td a:hover {
+      color: #c7e8ff;
+      text-decoration-color: rgba(199, 232, 255, 0.72);
+    }
+
+    .val-summary-table {
+      margin: 2px 0 14px;
+    }
+
+    .val-summary-table th,
+    .val-summary-table td {
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .comps-snapshot-table {
+      margin-bottom: 24px;
+    }
+
+    .valuation-section-title {
+      margin-top: 30px !important;
+      margin-bottom: 14px !important;
+    }
+
+    .per-head-stats-title {
+      margin-top: 30px !important;
+      margin-bottom: 14px !important;
+    }
+
+    .bucket-chip {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--surface) 80%, transparent);
+    }
+
+    .bucket-management {
+      color: #fdb074;
+      border-color: rgba(249, 115, 22, 0.35);
+      background: rgba(249, 115, 22, 0.14);
+    }
+
+    .bucket-engineering {
+      color: #8ac6ff;
+      border-color: rgba(59, 130, 246, 0.35);
+      background: rgba(59, 130, 246, 0.14);
+    }
+
+    .bucket-product {
+      color: #9ce8bd;
+      border-color: rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.14);
+    }
+
+    .bucket-other {
+      color: #d6cae9;
+      border-color: rgba(168, 85, 247, 0.35);
+      background: rgba(168, 85, 247, 0.14);
+    }
+
     @media (max-width: 1440px) {
       .shell { max-width: 1400px; }
       .content { grid-template-columns: 1.2fr 1fr; }
@@ -2240,22 +2335,72 @@
           <article id="rosterPanel" class="card hidden">
             <h3>Talent Roster</h3>
             <div id="talentDropzone" class="dropzone">
-              Drag and drop a CSV/TSV talent sheet here, or <input id="talentUpload" type="file" accept=".csv,.tsv,.txt" style="font:inherit;font-size:12px;">.
+              Drag and drop a CSV/TSV/XLSX talent sheet here, or <input id="talentUpload" type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" style="font:inherit;font-size:12px;">.
             </div>
             <div id="talentStatus" class="muted" style="margin-bottom:8px;"></div>
+            <div id="talentBuckets" class="muted" style="margin-bottom:8px;"></div>
             <table class="table">
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Title</th>
+                  <th>Current Title</th>
                   <th>Location</th>
-                  <th>Notes</th>
+                  <th>LinkedIn</th>
                 </tr>
               </thead>
               <tbody id="rosterBody"></tbody>
             </table>
           </article>
 
+          <article id="valuationPanel" class="card hidden">
+            <h3>Comps Summary</h3>
+            <div id="compsToggleList" class="comp-toggle-list"></div>
+
+            <h3 class="valuation-section-title">Comps Snapshot</h3>
+            <table class="val-table comps-snapshot-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Target</th>
+                  <th>Structure</th>
+                  <th>Value ($M)</th>
+                  <th>Team</th>
+                  <th>Per Head ($M)</th>
+                </tr>
+              </thead>
+              <tbody id="compsRows"></tbody>
+            </table>
+
+            <h3 class="per-head-stats-title">Per Head Stats</h3>
+            <table class="val-table val-summary-table">
+              <thead>
+                <tr>
+                  <th>Min ($M)</th>
+                  <th>25th % ($M)</th>
+                  <th>Median ($M)</th>
+                  <th>75th % ($M)</th>
+                  <th>Max ($M)</th>
+                </tr>
+              </thead>
+              <tbody id="compsStatsBody"></tbody>
+            </table>
+
+            <h3 class="valuation-section-title">Valuation Calculator</h3>
+            <div class="valuation-grid">
+              <div class="field"><label for="valTeamSize">Selected Talent (Auto)</label><input id="valTeamSize" type="number" min="0" step="1" readonly aria-readonly="true"></div>
+              <div class="field"><label for="valPerHead">Per Head ($M)</label><input id="valPerHead" type="number" min="0" step="0.01"></div>
+              <div class="field"><label for="valRetention">Retention (%)</label><input id="valRetention" type="number" min="0" max="100" step="1"></div>
+              <div class="field"><label for="valStrategic">Strategic Multiplier</label><input id="valStrategic" type="number" min="0" step="0.05"></div>
+              <div class="field"><label for="valAsset">Asset Value ($M)</label><input id="valAsset" type="number" min="0" step="0.1"></div>
+              <div class="field"><label for="valIntegration">Integration Costs ($M)</label><input id="valIntegration" type="number" min="0" step="0.1"></div>
+            </div>
+            <div id="valuationKpis" class="valuation-kpis"></div>
+            <p id="valuationCompare" class="muted"></p>
+            <div id="valuationSpectrum" class="spectrum-wrap"></div>
+          </article>
+        </div>
+
+        <div class="stack">
           <article id="projectDocsPanel" class="card hidden">
             <h3>Project Documents</h3>
             <div class="row-tools">
@@ -2279,39 +2424,6 @@
             </table>
           </article>
 
-          <article id="valuationPanel" class="card hidden">
-            <h3>Valuation Calculator</h3>
-            <div class="valuation-grid">
-              <div class="field"><label for="valTeamSize">Team Size</label><input id="valTeamSize" type="number" min="0" step="1"></div>
-              <div class="field"><label for="valPerHead">Per Head ($M)</label><input id="valPerHead" type="number" min="0" step="0.01"></div>
-              <div class="field"><label for="valRetention">Retention (%)</label><input id="valRetention" type="number" min="0" max="100" step="1"></div>
-              <div class="field"><label for="valStrategic">Strategic Multiplier</label><input id="valStrategic" type="number" min="0" step="0.05"></div>
-              <div class="field"><label for="valAsset">Asset Value ($M)</label><input id="valAsset" type="number" min="0" step="0.1"></div>
-              <div class="field"><label for="valIntegration">Integration Costs ($M)</label><input id="valIntegration" type="number" min="0" step="0.1"></div>
-            </div>
-            <div id="valuationKpis" class="valuation-kpis"></div>
-            <p id="valuationCompare" class="muted"></p>
-            <h3>Included Comps</h3>
-            <div id="compsToggleList" class="comp-toggle-list"></div>
-            <div id="valuationSpectrum" class="spectrum-wrap"></div>
-            <h3>Comps Snapshot</h3>
-            <table class="val-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Target</th>
-                  <th>Structure</th>
-                  <th>Value ($M)</th>
-                  <th>Team</th>
-                  <th>Per Head ($M)</th>
-                </tr>
-              </thead>
-              <tbody id="compsRows"></tbody>
-            </table>
-          </article>
-        </div>
-
-        <div class="stack">
           <article id="docViewerPanel" class="card hidden">
             <h3>Document Viewer</h3>
             <div id="viewerMeta" class="muted" style="margin-bottom:8px;">Select a file from Project Documents to view it.</div>
@@ -2562,6 +2674,7 @@
     const talentDropzone = document.getElementById("talentDropzone");
     const talentUpload = document.getElementById("talentUpload");
     const talentStatus = document.getElementById("talentStatus");
+    const talentBuckets = document.getElementById("talentBuckets");
 
     const projectDocsPanel = document.getElementById("projectDocsPanel");
     const docBreadcrumbs = document.getElementById("docBreadcrumbs");
@@ -2581,6 +2694,7 @@
     const valuationKpis = document.getElementById("valuationKpis");
     const valuationCompare = document.getElementById("valuationCompare");
     const compsToggleList = document.getElementById("compsToggleList");
+    const compsStatsBody = document.getElementById("compsStatsBody");
     const valuationSpectrum = document.getElementById("valuationSpectrum");
     const compsRows = document.getElementById("compsRows");
 
@@ -2982,11 +3096,59 @@
         name: find(["name", "fullname", "employee", "candidate"]),
         title: find(["title", "role", "position", "job"]),
         location: find(["location", "city", "country", "based"]),
+        linkedin: find(["linkedin", "linkedinurl", "linkedinprofile", "profileurl", "url"]),
         notes: find(["note", "comment", "remark", "summary", "bio"]),
       };
     }
 
+    function toBase64(bytes) {
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        const part = bytes.subarray(i, i + chunk);
+        binary += String.fromCharCode(...part);
+      }
+      return btoa(binary);
+    }
+
+    async function importTalentXlsx(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const response = await fetch("/api/parse-talent-sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          data: toBase64(bytes),
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || `Excel import failed (${response.status})`);
+      }
+      const rows = Array.isArray(payload.rows) ? payload.rows : [];
+      const mapped = rows.map((r) => ({
+        name: String(r.name || "").trim(),
+        title: String(r.title || "").trim(),
+        location: String(r.location || "").trim(),
+        linkedin: String(r.linkedin || "").trim(),
+        notes: String(r.linkedin || "").trim(),
+      })).filter((x) => x.name);
+      const project = activeProject();
+      if (!project) throw new Error("No active project selected.");
+      project.talent = mapped;
+      talentStatus.textContent = `Imported ${mapped.length} roster rows from ${file.name}.`;
+      renderProject();
+    }
+
     async function importTalentFile(file) {
+      const lowerName = String(file?.name || "").toLowerCase();
+      if (lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls")) {
+        if (lowerName.endsWith(".xls")) {
+          throw new Error("Legacy .xls is not supported yet. Please save as .xlsx and re-upload.");
+        }
+        await importTalentXlsx(file);
+        return;
+      }
       const text = await file.text();
       const firstLine = text.split(/\r?\n/).find((x) => x.trim()) || "";
       const delim = bestDelimiter(firstLine);
@@ -3000,8 +3162,14 @@
         name: map.name >= 0 ? (r[map.name] || "").trim() : (r[0] || "").trim(),
         title: map.title >= 0 ? (r[map.title] || "").trim() : (r[1] || "").trim(),
         location: map.location >= 0 ? (r[map.location] || "").trim() : (r[2] || "").trim(),
+        linkedin: map.linkedin >= 0 ? (r[map.linkedin] || "").trim() : "",
         notes: map.notes >= 0 ? (r[map.notes] || "").trim() : (r[3] || "").trim(),
       })).filter((x) => x.name);
+      mapped.forEach((row) => {
+        if (!row.linkedin) {
+          row.linkedin = row.notes || "";
+        }
+      });
       project.talent = mapped;
       talentStatus.textContent = `Imported ${mapped.length} roster rows from ${file.name}.`;
       renderProject();
@@ -3026,21 +3194,76 @@
       return state.comps.filter((c) => state.compsIncludeById[c.id] !== false);
     }
 
+    function inferTalentBucket(talent) {
+      const text = `${talent?.title || talent?.role || ""} ${talent?.notes || talent?.area || ""}`.toLowerCase();
+      const has = (arr) => arr.some((word) => text.includes(word));
+      if (has(["ceo", "cto", "cfo", "coo", "chief", "founder", "president", "vp ", "svp", "evp", "head ", "director", "manager"])) {
+        return "Management";
+      }
+      if (has(["product", "pm ", "product manager", "product management", "product strategy"])) {
+        return "Product";
+      }
+      if (has(["engineer", "engineering", "developer", "architect", "devops", "sre", "ml ", "machine learning", "data scientist", "analytics engineer", "software"])) {
+        return "Engineering";
+      }
+      return "Other";
+    }
+
+    function tallyTalentBuckets(talentList) {
+      const counts = { Management: 0, Engineering: 0, Product: 0, Other: 0 };
+      (talentList || []).forEach((talent) => {
+        const bucket = inferTalentBucket(talent);
+        counts[bucket] = (counts[bucket] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function talentSelectionKey(talent, idx) {
+      const name = String(talent?.name || "").trim().toLowerCase();
+      const title = String(talent?.title || talent?.role || "").trim().toLowerCase();
+      const location = String(talent?.location || talent?.area || "").trim().toLowerCase();
+      return `${idx}:${name}|${title}|${location}`;
+    }
+
+    function syncTalentSelection(project, valuation) {
+      if (!project || !valuation) return [];
+      if (!valuation.talentSelection || typeof valuation.talentSelection !== "object") {
+        valuation.talentSelection = {};
+      }
+      const keys = (project.talent || []).map((talent, idx) => talentSelectionKey(talent, idx));
+      const active = {};
+      keys.forEach((key) => {
+        active[key] = valuation.talentSelection[key] !== false;
+      });
+      valuation.talentSelection = active;
+      return keys;
+    }
+
+    function selectedTalentCount(project, valuation) {
+      const keys = syncTalentSelection(project, valuation);
+      return keys.reduce((count, key) => count + (valuation.talentSelection[key] ? 1 : 0), 0);
+    }
+
     function ensureValuation(project) {
       if (!project) return null;
       const existing = state.valuationByProject[project.id];
-      if (existing) return existing;
+      if (existing) {
+        existing.teamSize = selectedTalentCount(project, existing);
+        return existing;
+      }
 
       const perHeads = activeCompsList().map((c) => c.perHead).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
       const median = perHeads.length ? perHeads[Math.floor(perHeads.length / 2)] : 0.85;
       const seed = {
-        teamSize: normalizeTeamSize(project.teamSize, 0),
+        teamSize: 0,
         perHead: Number(median.toFixed(2)),
         retention: 80,
         strategic: 1.0,
         asset: 0,
         integration: 0,
+        talentSelection: {},
       };
+      seed.teamSize = selectedTalentCount(project, seed);
       state.valuationByProject[project.id] = seed;
       return seed;
     }
@@ -3161,9 +3384,9 @@
         </div>
         <div class="spectrum-labels">
           <span>Min ${esc(moneyM(points.min))}</span>
-          <span>P25 ${esc(moneyM(points.p25))}</span>
+          <span>25th % ${esc(moneyM(points.p25))}</span>
           <span>Median ${esc(moneyM(points.p50))}</span>
-          <span>P75 ${esc(moneyM(points.p75))}</span>
+          <span>75th % ${esc(moneyM(points.p75))}</span>
           <span>Max ${esc(moneyM(points.max))}</span>
         </div>
       `;
@@ -3172,11 +3395,14 @@
     function renderValuation(project) {
       const val = ensureValuation(project);
       if (!val) return;
+      val.teamSize = selectedTalentCount(project, val);
       const activeComps = activeCompsList();
       const stats = compStats(activeComps);
       const out = computeValuation(val);
 
       valTeamSize.value = val.teamSize;
+      valTeamSize.readOnly = true;
+      valTeamSize.title = "Calculated from selected talent in the roster.";
       valPerHead.value = Number(val.perHead.toFixed(2));
       valPerHead.readOnly = false;
       valPerHead.title = "";
@@ -3188,6 +3414,22 @@
       const perHeads = activeComps.map((c) => c.perHead).filter((n) => Number.isFinite(n));
       const pct = percentileRank(perHeads, out.impliedPerHead);
 
+      if (compsStatsBody) {
+        if (stats.count) {
+          compsStatsBody.innerHTML = `
+            <tr>
+              <td>${esc(moneyM(stats.min))}</td>
+              <td>${esc(moneyM(stats.p25))}</td>
+              <td>${esc(moneyM(stats.p50))}</td>
+              <td>${esc(moneyM(stats.p75))}</td>
+              <td>${esc(moneyM(stats.max))}</td>
+            </tr>
+          `;
+        } else {
+          compsStatsBody.innerHTML = `<tr><td colspan="5" class="muted">No comps selected.</td></tr>`;
+        }
+      }
+
       valuationKpis.innerHTML = [
         ["Talent Value", moneyM(out.talentValue)],
         ["Asset Value", moneyM(out.asset)],
@@ -3197,7 +3439,7 @@
       ].map(([k, v]) => `<div class="metric"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("");
 
       valuationCompare.textContent = perHeads.length
-        ? `Implied per-head ${moneyM(out.impliedPerHead)} (${pct}th Percentile) vs. comps p25 ${moneyM(stats.p25)}, median ${moneyM(stats.p50)}, p75 ${moneyM(stats.p75)}, p90 ${moneyM(stats.p90)}, avg ${moneyM(stats.mean)} from ${stats.count} selected comps.`
+        ? `Implied per-head ${moneyM(out.impliedPerHead)} (${pct}th Percentile) vs. comps 25th % ${moneyM(stats.p25)}, median ${moneyM(stats.p50)}, 75th % ${moneyM(stats.p75)}, 90th % ${moneyM(stats.p90)}, avg ${moneyM(stats.mean)} from ${stats.count} selected comps.`
         : `No comps selected. Select at least one comp to benchmark percentile and ranges.`;
 
       compsToggleList.innerHTML = state.comps.map((c) => `
@@ -3582,7 +3824,7 @@
       ].map(v => `<div class="mini">${v}</div>`).join("");
 
       p.founded = normalizeYear(p.founded, "Unknown");
-      p.teamSize = normalizeTeamSize(p.teamSize, 0);
+      p.teamSize = Array.isArray(p.talent) ? p.talent.length : 0;
       p.valuation = formatMillions(p.valuation, "Unknown");
       p.totalFunding = formatMillions(p.totalFunding, "Unknown");
 
@@ -3591,6 +3833,14 @@
           <div class="kv-head">
             <small>${esc(label)}</small>
             <button class="kv-edit" type="button" data-edit="${esc(key)}" aria-label="Edit ${esc(label)}">✎</button>
+          </div>
+          <b>${esc(value)}</b>
+        </div>
+      `;
+      const renderReadonlyCard = (label, value) => `
+        <div class="kv">
+          <div class="kv-head">
+            <small>${esc(label)}</small>
           </div>
           <b>${esc(value)}</b>
         </div>
@@ -3610,7 +3860,7 @@
         ${renderCard("Priority", p.priority, "priority")}
         ${renderCard("Founded", p.founded, "founded")}
         ${renderCard("HQ", p.location, "location")}
-        ${renderCard("Team Size", p.teamSize, "teamSize")}
+        ${renderReadonlyCard("Team Size", p.teamSize)}
         ${renderCard("Codename", p.codename || "TBD", "codename")}
         ${renderCard("Valuation", p.valuation, "valuation")}
         ${renderCard("Total Funding", p.totalFunding || "Unknown", "totalFunding")}
@@ -3686,14 +3936,45 @@
         .map(t => `<li><time>${esc(formatDate(t.date))}</time><span>${esc(t.note)}</span></li>`)
         .join("");
 
-      rosterBody.innerHTML = p.talent.map(t => `
+      const valuation = ensureValuation(p);
+      const talentKeys = syncTalentSelection(p, valuation);
+      const bucketCounts = tallyTalentBuckets(p.talent || []);
+      if (talentBuckets) {
+        talentBuckets.textContent = `Buckets: Management ${bucketCounts.Management} | Engineering ${bucketCounts.Engineering} | Product ${bucketCounts.Product} | Other ${bucketCounts.Other}`;
+      }
+      rosterBody.innerHTML = p.talent.map((t, idx) => {
+        const key = talentKeys[idx];
+        const checked = valuation.talentSelection[key] ? "checked" : "";
+        const linkedinValue = String(t.linkedin || t.notes || "").trim();
+        const linkedinIsUrl = /^https?:\/\//i.test(linkedinValue);
+        const bucket = inferTalentBucket(t);
+        const bucketClass = `bucket-${bucket.toLowerCase()}`;
+        return `
         <tr>
-          <td>${esc(t.name)}</td>
-          <td>${esc(t.title || t.role || "")}</td>
+          <td>
+            <label class="talent-select-label">
+              <input type="checkbox" data-talent-toggle="${esc(key)}" ${checked}>
+              <span class="talent-name">${esc(t.name)}</span>
+            </label>
+          </td>
+          <td>
+            <div>${esc(t.title || t.role || "")}</div>
+            <span class="bucket-chip ${esc(bucketClass)}">${esc(bucket)}</span>
+          </td>
           <td>${esc(t.location || t.area || "")}</td>
-          <td>${esc(t.notes)}</td>
+          <td>${linkedinValue ? (linkedinIsUrl ? `<a href="${esc(linkedinValue)}" target="_blank" rel="noopener noreferrer">View profile</a>` : esc(linkedinValue)) : ""}</td>
         </tr>
-      `).join("");
+      `;
+      }).join("");
+      rosterBody.querySelectorAll("[data-talent-toggle]").forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          const key = checkbox.getAttribute("data-talent-toggle");
+          if (!key) return;
+          valuation.talentSelection[key] = checkbox.checked;
+          valuation.teamSize = selectedTalentCount(p, valuation);
+          renderValuation(p);
+        });
+      });
       renderDocExplorer(p);
       renderValuation(p);
       renderDocViewer(p);
@@ -3926,7 +4207,6 @@
     downloadDocBtn.addEventListener("click", downloadSelectedDoc);
 
     const valuationInputs = [
-      ["teamSize", valTeamSize, (v) => normalizeTeamSize(v, 0)],
       ["perHead", valPerHead, (v) => Math.max(0, toNum(v, 0))],
       ["retention", valRetention, (v) => Math.min(100, Math.max(0, toNum(v, 0)))],
       ["strategic", valStrategic, (v) => Math.max(0, toNum(v, 1))],
